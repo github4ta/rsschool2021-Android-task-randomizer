@@ -6,18 +6,30 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
+import kotlin.random.Random
 
 class SecondFragment : Fragment() {
 
     private var backButton: Button? = null
     private var result: TextView? = null
+    private lateinit var communicator: Communicator
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        communicator = activity as Communicator
+        /**
+         *  Customize Back navigation (<) button navigating to the FirstFragment
+         */
+        val callback = requireActivity().onBackPressedDispatcher.addCallback(this) {
+            communicator.passResult(result?.text.toString().toInt())
+        }
+        requireActivity().onBackPressedDispatcher.addCallback(callback)
+
         return inflater.inflate(R.layout.fragment_second, container, false)
     }
 
@@ -32,13 +44,21 @@ class SecondFragment : Fragment() {
         result?.text = generate(min, max).toString()
 
         backButton?.setOnClickListener {
-            // TODO: implement back
+            /**
+             *  Transfer [result] data to the FirstFragment.
+             */
+            communicator.passResult(result?.text.toString().toInt())
         }
     }
 
     private fun generate(min: Int, max: Int): Int {
-        // TODO: generate random number
-        return 0
+        /**
+         *  Default random value uniformly distributed between the specified [min] (inclusive)
+         *  and [max] (exclusive) bounds. In order to suite the task and generate
+         *  random value between [min] (inclusive) and [max] (inclusive) bounds
+         *  the [max] value is incremented by +1.
+         */
+        return Random.nextInt(min, max + 1)
     }
 
     companion object {
@@ -48,7 +68,9 @@ class SecondFragment : Fragment() {
             val fragment = SecondFragment()
             val args = Bundle()
 
-            // TODO: implement adding arguments
+            args.putInt(MIN_VALUE_KEY, min)
+            args.putInt(MAX_VALUE_KEY, max)
+            fragment.arguments = args
 
             return fragment
         }
